@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Pane borders now draw rounded corners by default. Set `ui.pane_border_corners = "square"` to keep right-angle corners.
+
 ## [0.9.1] - 2026-09-16
 
 ### Added

@@ -493,7 +493,7 @@ fn render_pane_borders(
         let focused = pane_infos
             .iter()
             .any(|info| info.is_focused && line_touches_pane(x, y, info, app.pane_gaps));
-        let symbol = line_cell_symbol(line);
+        let symbol = line_cell_symbol(line, app.pane_border_corners);
         if symbol.is_empty() {
             continue;
         }
@@ -685,7 +685,11 @@ fn render_pane_border_titles(
     }
 }
 
-fn line_cell_symbol(line: LineCell) -> &'static str {
+fn line_cell_symbol(
+    line: LineCell,
+    corners: crate::config::PaneBorderCornersConfig,
+) -> &'static str {
+    let rounded = corners == crate::config::PaneBorderCornersConfig::Rounded;
     match (line.up, line.down, line.left, line.right) {
         (true, true, true, true) => "┼",
         (true, true, true, false) => "┤",
@@ -698,6 +702,10 @@ fn line_cell_symbol(line: LineCell) -> &'static str {
         (false, false, true, true) | (false, false, true, false) | (false, false, false, true) => {
             "─"
         }
+        (false, true, false, true) if rounded => "╭",
+        (false, true, true, false) if rounded => "╮",
+        (true, false, false, true) if rounded => "╰",
+        (true, false, true, false) if rounded => "╯",
         (false, true, false, true) => "┌",
         (false, true, true, false) => "┐",
         (true, false, false, true) => "└",
@@ -1167,6 +1175,40 @@ mod tests {
         assert_eq!(buffer[(2, 2)].style().fg, Some(app.palette.accent));
         assert_eq!(buffer[(2, 1)].symbol(), "│");
         assert_eq!(buffer[(2, 1)].style().fg, Some(app.palette.accent));
+    }
+
+    #[test]
+    fn pane_border_corners_follow_config() {
+        let render_corners = |corners: crate::config::PaneBorderCornersConfig| {
+            let mut app = AppState::test_new();
+            app.pane_border_corners = corners;
+            app.view.terminal_area = Rect::new(0, 0, 3, 3);
+            app.view.pane_infos = vec![PaneInfo {
+                id: PaneId::from_raw(1),
+                rect: Rect::new(0, 0, 3, 3),
+                inner_rect: Rect::default(),
+                scrollbar_rect: None,
+                borders: Borders::ALL,
+                is_focused: true,
+            }];
+            let ws = Workspace::test_new("test");
+            let mut terminal =
+                ratatui::Terminal::new(ratatui::backend::TestBackend::new(3, 3)).unwrap();
+            terminal
+                .draw(|frame| render_view_pane_borders(&app, &ws, &[], frame))
+                .unwrap();
+            let buffer = terminal.backend().buffer();
+            [(0, 0), (2, 0), (0, 2), (2, 2)].map(|pos| buffer[pos].symbol().to_string())
+        };
+
+        assert_eq!(
+            render_corners(crate::config::PaneBorderCornersConfig::Rounded),
+            ["╭", "╮", "╰", "╯"]
+        );
+        assert_eq!(
+            render_corners(crate::config::PaneBorderCornersConfig::Square),
+            ["┌", "┐", "└", "┘"]
+        );
     }
 
     #[test]

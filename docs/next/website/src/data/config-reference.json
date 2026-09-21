@@ -970,6 +970,16 @@
           ]
         },
         {
+          "key": "ui.pane_border_corners",
+          "type": "enum",
+          "default": "\"rounded\"",
+          "description": "Corner shape of pane borders. rounded draws arc corners (╭╮╰╯); square draws right-angle corners (┌┐└┘). Junctions between split panes stay square.",
+          "values": [
+            "rounded",
+            "square"
+          ]
+        },
+        {
           "key": "ui.pane_outer_borders",
           "type": "boolean",
           "default": "true",

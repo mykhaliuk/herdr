@@ -848,6 +848,14 @@ pub enum TabBarPositionConfig {
     Bottom,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum PaneBorderCornersConfig {
+    #[default]
+    Rounded,
+    Square,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum PaneBordersConfig {
     #[default]
@@ -940,6 +948,8 @@ pub struct UiConfig {
     /// disables them. Legacy booleans map true to auto and false to off.
     /// Default: auto.
     pub pane_borders: PaneBordersConfig,
+    /// Corner shape of pane borders: rounded or square. Default: rounded.
+    pub pane_border_corners: PaneBorderCornersConfig,
     /// Draw borders along the outside edge of the pane area. Default: true.
     pub pane_outer_borders: bool,
     /// Draw interactive scrollbars beside terminal panes. Default: true.
@@ -1179,6 +1189,7 @@ impl Default for UiConfig {
             prompt_new_tab_name: true,
             prompt_new_workspace_name: false,
             pane_borders: PaneBordersConfig::Auto,
+            pane_border_corners: PaneBorderCornersConfig::Rounded,
             pane_outer_borders: true,
             pane_scrollbars: true,
             pane_gaps: true,
@@ -1475,6 +1486,28 @@ status_indicators = "symbols"
             .unwrap_err()
             .to_string();
         assert!(wrong_type.contains("\"auto\", \"always\", \"off\", or a legacy boolean"));
+    }
+
+    #[test]
+    fn pane_border_corners_default_to_rounded_and_parse() {
+        assert_eq!(
+            Config::default().ui.pane_border_corners,
+            PaneBorderCornersConfig::Rounded
+        );
+
+        let square: Config = toml::from_str("[ui]\npane_border_corners = \"square\"").unwrap();
+        assert_eq!(
+            square.ui.pane_border_corners,
+            PaneBorderCornersConfig::Square
+        );
+
+        let rounded: Config = toml::from_str("[ui]\npane_border_corners = \"rounded\"").unwrap();
+        assert_eq!(
+            rounded.ui.pane_border_corners,
+            PaneBorderCornersConfig::Rounded
+        );
+
+        assert!(toml::from_str::<Config>("[ui]\npane_border_corners = \"round\"").is_err());
     }
 
     #[test]
