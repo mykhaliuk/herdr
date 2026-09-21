@@ -292,6 +292,9 @@ const DEFAULT_CONFIG: &str = r##"# herdr configuration
 # Legacy booleans still parse: true = "auto", false = "off".
 # pane_borders = "auto"
 
+# Corner shape of pane borders: "rounded" (╭╮╰╯) or "square" (┌┐└┘).
+# pane_border_corners = "rounded"
+
 # Draw borders along the outside edge of the pane area.
 # Disable for tmux-style internal splitters without an outside frame.
 # pane_outer_borders = true
